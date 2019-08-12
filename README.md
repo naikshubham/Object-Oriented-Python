@@ -56,5 +56,30 @@ The syntax for multiple inheritance looks like a parameter list in the class def
 >>>e.send_mail("hello, test email here")
 Sending mail to testuser@example.net
 ```
+- Multiple inheritance works all right when mixing methods from different classes, but it gets very messy when we have to work with calling methods on the superclass. Because there are multiple superclasses. How do we know which one to call? How do we know what order to call them in ?
+
+### The Diamond Problem
+
+- If we have two parent __init__ methods that both need to be initialized, and they need to initialized with different arguments. How do we do that? We can start with a naive approach:
+
+```python
+class Addressholder:
+	def __init__(self, street, city, state, code):
+		self.street = street
+		self.city = city
+		self.state = state
+		self.code = code
+	
+class Friend(Contact, Addressholder):
+	def __init__(self, name, email, phone, street, city, state, code):
+		Contact.__init__(self, name, email)
+		AddressHolder.__init__(self, street, city, state, code)
+		self.phone = phone
+```
+In this example we directly call the __init__ function on each of the superclasses and explicitly pass the self argument. This example technically works;we can access the different varaibles directly on the class. But there are few problems.
+
+1) There is a possibilty for a superclass to go uninitialized if we neglect to explicilty call the initializer 
+	
+
 
    
