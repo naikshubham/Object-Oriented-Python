@@ -10,6 +10,8 @@ To use a class, we can create an object from it. This is known as Object instant
 - When we create objects from a class, each object shares the class's coded methods, but maintains its own copy of varaibles.
 - The first argument to every method is always "self" and its value is supplied by the interpreter
 
+#### Constructor
+- Construction `__init__()` method is called every time an object is created.
 
 ```python
 # Example
@@ -170,6 +172,8 @@ class Subclass(LeftSubclass, RightSubclass):
 		print("Calling method on Subclass")
 		self.num_sub_calls += 1
 ```
+
+
 
 ```
 >>> s = Subclass()
