@@ -10,8 +10,62 @@ To use a class, we can create an object from it. This is known as Object instant
 - When we create objects from a class, each object shares the class's coded methods, but maintains its own copy of varaibles.
 - The first argument to every method is always "self" and its value is supplied by the interpreter
 
-#### Constructor
+### Constructor
 - Construction `__init__()` method is called every time an object is created.
+
+### Class-level data
+- Data shared among all instances of a class. "Global variable" within the class.`MIN_SALARY` is shared among all instances.
+- Dont use `self` to define class attribute and use `ClassName.ATTR_NAME` to access the class attribute value.
+
+```python
+class Employee:
+	# define a class attribute
+	MIN_SALARY = 30000 #<---no self
+	def __init__(self, name, salary):
+		self.name = name
+		# use class name to access class attribute
+		if salary >= Employee.MIN_SALARY:
+			self.salary = salary
+		else:
+			self.salary = Employee.MIN_SALARY
+
+	@classmethod
+	def from_file(cls, filename):
+		with open(filename, 'r') as f:
+			name = f.readline()
+		return cls(name)
+
+emp = Employee.from_file("employee_data.txt")
+```
+
+### Class methods
+- Methods are already shared : same code for every instance. Class methods cant use instance-level data.
+
+```python
+class MyClass:
+
+	@classmethod                #<--use decorator to declare a class method
+	def my_method(cls, args..): #<--cls argument refers to the class
+		# execute
+		# can't use any instance attributes
+```
+
+- To call a class method we use `MyClass.my_method(args...)` syntax rather then obj.my_method syntax.
+
+#### Alternative constructors
+- why would we ever need class methods at all? The main use case is `Alternative constructors`. A class can only have one __init__ method, but there might be multiple ways to initialize an object.
+- For e.g, we might want to create a Employee object from data stored in a file, we can't use a method because that would require an instance and there isn't one yet.
+- Here we introduce a class method `from_file` (refer above example) that accepts a filename, reads the firstname from the file that reads the name from file, name of the employee and returns an object instance. In the return statement `cls` is used. `cls` refers to the class. **This line will call the __init__ constructor just like calling Employee with the parenthesis**.
+- Then we call the method `from_file` by using Class.method syntax which will create a Employee object without explicitly calling the constructor.
+
+### Inheritance
+- Code reuse. New class functionality = old class functionality + extra
+
+```python
+# implementening class inheritance
+class MyChild(MyParent):
+	# execute
+```
 
 ```python
 # Example
