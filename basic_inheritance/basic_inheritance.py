@@ -1,5 +1,4 @@
 		
-	
 class ContactList(list):
 	def search(self, name):
 		'''return all contacts that contain the search value in their name'''
