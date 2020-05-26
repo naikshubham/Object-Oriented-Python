@@ -67,6 +67,73 @@ class MyChild(MyParent):
 	# execute
 ```
 
+### Customizing constructors
+
+```python
+class BankAccount:
+	def __init__(self, balance):
+		self.balance = balance
+
+	def withdraw(self, amount):
+		self.balance -= amount
+
+class SavingsAccount(BankAccount):
+	# constructor specifically for SavingsAccount with an additional parameter
+	def __init__(self, balance, interest_rate):
+		# call the parent constructor using ClassName.__init__()
+		BankAccount.__init__(self, balance) # <--- self is a SavingsAccount but also a BankAccount
+		# add more functionality
+		self.interest_rate = interest_rate
+		# construct the object using the new constructor
+		acct = SavingsAccount(1000, 0.03)
+		acct.interest_rate
+```
+
+- Can run constructor of the parent class first by `Parent.__init__(self, args...)`. We used `BankAccount.__init__(self, balance)` to tell Python to call the constructor from Parent class.
+- `self` in this case is an savings account, that's the class we are in. In Python the instances of the subclass are also instances of parent class.
+
+### Adding functionality
+- Add methods as usual. Can use the data from both the parent and the child class.
+
+```python
+class SavingsAccount(BankAccount):
+	def __init__(self, balance, interest_rate):
+		BankAccount.__init__(self, balance)
+		self.interest_rate = interest_rate
+
+	# new functionality
+	def compute_interest(self, n_periods=1):
+		return self.balance * ((1 + self.interest_rate) ** n_periods - 1)
+```
+
+### Customizing functionality
+
+```python
+class CheckingAccount(BankAccount):
+	def __init__(self, balance, limit):
+		BankAccount.__init__(self, content)
+		self.limit = limit
+
+	def deposit(self, amount):
+		self.balance += amount
+
+	# new argument to withdraw fee
+	def withdraw(self, amount, fee=0):
+		# compare the fee to limit and then call parent withdraw method
+		if fee <= self.limit:
+			BankAccount.withdraw(self, amount - fee)
+		else:
+			BankAccount.withdraw(self, amount - limit)
+
+```
+
+
+
+
+
+
+
+
 ```python
 # Example
 class CountFromBy:
@@ -243,7 +310,6 @@ s.num_base_calls)
 
 - Base method is only called once. First call_me of Subclass calls super().call_me(), which happens to refer to LeftSubclass.call_me(). LeftSubclass.call_me() then calls super().call_me(), but in this case, super() is referring to RightSubclass.call_me()
 - The super call is not calling the method on the superclass of LeftSubclass(which is Baseclass), it is calling the RightSubclass, even though it is not a parent of LeftSubclass! This is the next method, not the parent method. RightSubclass then calls BaseClass and the super calls have ensured each method in the class hierarchy is executed once.
-
 
 
 - Acknowledgement
