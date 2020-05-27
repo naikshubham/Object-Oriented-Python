@@ -67,6 +67,12 @@ class MyChild(MyParent):
 	# execute
 ```
 
+#### Method inheritance
+- Inheritance is powerful because it allows us to reuse and customize code without rewriting existing code. By calling methods of the parent class within the child class, we reuse all the code in those methods, making our code concise and manageable.
+
+#### Inheritance of class methods
+- To customize the parent's class method in a child class, start with a `@classmethod decorator`, and define a method with the same name in the child's class, just like we did with regular methods. The only difference is that to call the parent's class method within the child's method, we can use `ClassName.method_name(args...)` without passing `self` or `cls`.
+
 ### Customizing constructors
 
 ```python
@@ -125,14 +131,19 @@ class CheckingAccount(BankAccount):
 		else:
 			BankAccount.withdraw(self, amount - limit)
 
+check_acct = CheckingAccount(1000, 25)
+
+# will call withdraw from CheckingAccount
+check_acct.withdraw(200)
+
+bank_acct = BankAccount(1000)
+
+# will call withdraw from BankAccount # this is an application of polymorphism
+bank_acct.withdraw(200)
 ```
 
-
-
-
-
-
-
+- Notice that we can change the signature of the method in subclass by adding a parameter.
+- Use `Parent.method(self, args...)` to call a method from the parent class.
 
 ```python
 # Example
@@ -294,8 +305,6 @@ class Subclass(LeftSubclass, RightSubclass):
 		self.num_sub_calls += 1
 ```
 
-
-
 ```
 >>> s = Subclass()
 >>> s.call_me()
@@ -310,6 +319,225 @@ s.num_base_calls)
 
 - Base method is only called once. First call_me of Subclass calls super().call_me(), which happens to refer to LeftSubclass.call_me(). LeftSubclass.call_me() then calls super().call_me(), but in this case, super() is referring to RightSubclass.call_me()
 - The super call is not calling the method on the superclass of LeftSubclass(which is Baseclass), it is calling the RightSubclass, even though it is not a parent of LeftSubclass! This is the next method, not the parent method. RightSubclass then calls BaseClass and the super calls have ensured each method in the class hierarchy is executed once.
+
+### Operator overloading : comparison
+
+#### Object Equality
+
+```python
+class Customer:
+	def __init__(self, name, balance):
+		self.name, self.balance = name, balance
+
+customer1 = Customer("Maryam Azar", 3000)
+customer2 = Customer("Maryam Azar", 3000)
+
+customer1 == customer2  #<--- answer is False
+```
+
+- In this case it makes might sense, as we can have 2 customers with same name and acc balance. But what if the customer has a unique id number.Then 2 customers with same ID will be treated as equal, but they aren't.
+- The reason why Python does'nt consider two objects with same data equal by default has to do with how the object and variables representing them are stored. If we try to just print the value of customer object, we can see different addresses.
+- Python stores references to the data at these addresses. **So when we compare 2 objects we are comparing 2 references and not the data**. Bcz customer1 and customer2 points to different chunks in memory they are not considered equal. But it might not be the same in all cases.
+
+#### Custom comparison
+
+```python 
+import numpy as np
+
+# 2 different arrays containing the same data
+array1 = np.array([1,2,3])
+array2 = np.array([1,2,3])
+
+array1 == array2 # <-- outputs : True # same with pandas DF and other objects
+```
+
+- How can we enfore this for custom classes? We can define a special method for this.
+
+#### Overloading __eq__() (equality)
+- `__eq__()` is called whenever 2 objects of a class are compared with each other using `==`.
+- We can redefine this method to execute custom comparisons. The method should accept 2 argument referring to objects to be compared. They are usually called `self` and `other` by convention. Returns a boolean.
+- When comparing two objects of a custom class using ==, Python by default compares just the object references, not the data contained in the objects. To override this behavior, the class can implement the special __eq__() method, which accepts two arguments -- the objects to be compared -- and returns True or False. This method will be implicitly called when two objects are compared.
+
+```python
+class Customer:
+	def __init__(self, id, name):
+		self.id, self.name = id, name
+
+	# will be called when == is used
+	def __eq__(self, other):
+		# diagnostic printout
+		print('__eq__() is called')
+
+		# returns True if all attributes match
+		return (self.id == other.id) and (self.name == other.name)
+```
+
+#### Other comparison operators
+- `== : __eq__()` , `!= : __ne__()` , `>= : __ge__()`, `<= : __le__()`, `> : __gt__()`, `< : __lt__()`
+- There is a `__hash__()` method that allows us to use objects as dictionary keys and in sets.
+
+### Checking class equality
+- We defined a BankAccount class with a number attribute that was used for comparison. But if we were to compare a BankAccount object to an object of another class that also has a number attribute, we could end up with unexpected results.
+
+#### Consider two classes
+
+```python
+class Phone:
+  def __init__(self, number):
+     self.number = number
+
+  def __eq__(self, other):
+    return self.number == other.number
+
+pn = Phone(873555333)
+
+class BankAccount:
+  def __init__(self, number):
+     self.number = number
+
+  def __eq__(self, other):
+    return self.number == other.number
+
+acct = BankAccount(873555333)
+```
+
+- Running `acct == pn` will return True, even though we're comparing a phone number with a bank account number. It is good practice to check the class of objects passed to the __eq__() method to make sure the comparison makes sense.
+- Now only comparing objects of the same class BankAccount could return True. Another way to ensure that an object has the same type as you expect is to use the isinstance(obj, Class) function. This can helpful when handling inheritance, as Python considers an object to be an instance of both the parent and the child class.
+
+### Comparison and inheritance
+- What happens when an object is compared to an object of a child class? Consider the following two classes:
+
+```python
+class Parent:
+    def __eq__(self, other):
+        print("Parent's __eq__() called")
+        return True
+
+class Child(Parent):
+    def __eq__(self, other):
+        print("Child's __eq__() called")
+        return True
+```
+
+- **Python always calls the child's __eq__() method when comparing a child object to a parent object.**
+
+### Operator overloading : string representation
+
+#### String representation of objects
+- There are two special methods in Python that return a string representation of an object. __str__() is called when you use print() or str() on an object, and __repr__() is called when you use repr() on an object.
+
+#### Printng an object
+- We saw that printing object of custom class, prints the memory location of the object. But there are plenty of classes where the printout is much more informative.For e.g if we print a numpy array or dataframe, we will see the actual data contained in the object.
+- There are 2 special methods that we can define in a class that will return a printable representation of an object.
+- **`__str__()`** method is executed when we call **print(np.array([1,2,3])) or str(np.array([1,2,3]))** on an object. [print(obj), str(obj)]
+- **`__repr__()`** method is executed when we call **repr** on an object. [repr(obj)]
+- The difference is that `str` gives a informal representation (string representation), and `repr` is mainly used by developers. The best practise is to use `repr`, that can be used to reproduce the object.`repr` also used as fallback for print, when `str` is not defined.
+
+#### Implementation : str
+- It should'nt accept any argument besides `self` and it should return a `string`. If we now create a Customer object and print we will see a user friendly output.
+
+```python
+class Customer:
+	def __init__(self, name, balance):
+		self.name, self.balance = name, balance
+
+	def __str__(self):
+		cust_str = """
+		Customer :
+		name : {name}
+		balance : {balance}
+		""".format(name=self.name, balance=self.balance)
+		return cust_str
+
+cust = Customer("Maryam Azar", 3000)
+
+# will implicitly call __str__()
+print(cust)
+```
+
+### Implementation : repr
+- Accepts one argument `self` and returns a `string`. repr is used to reproduce the object, in this case the exact initialization call.
+
+```python
+class Customer:
+	def __init__(self, name, balance):
+		self.name, self.balance = name, balance
+
+	def __repr__(self):
+		return "Customer('{name}', {balance})".format(name=self.name, balance=self.balance)
+
+cust = Customer("Maryam Azar", 3000)
+cust # <-- will implicilty call __repr__()
+```
+
+- **We should always define at least one of the string representation methods for out object to make sure that the person using our class can get important information about the object easily.**
+
+### Exceptions
+#### Exception handling
+- use the `try` - `except` - `finally` code.
+
+```python
+try:
+	# try running some code
+
+except ExceptionNameHere:
+	# run this code if ExceptionNameHere happends
+
+except AnotherExceptionHere:
+	# run this code if AnotherExceptionHere occurs
+
+finally:
+	# run this code no matter what
+```
+
+#### Exceptions are classes
+- In python, exceptions are actually classes inherited from builtin classes, `BaseException` or `Exception`
+
+#### Custom Exceptions
+- To define custom exception, just define a class that inherits from built-in `Exception` class or one of its subclasses.
+- Usually an empty class and inheritance alone is enough to ensure that python will treat this class as an Exception class.
+
+```python
+class BalanceError(Exception):
+	pass
+
+class Customer:
+	def __init__(self, name, balance):
+		if balance < 0:
+			raise BalanceError("Balance has to be nonnegative")
+		else:
+			self.name, self.balance = name, balance
+```
+
+#### Catching custom exceptions
+```python
+try:
+	cust = Customer("larry Torres", -100)
+except BalanceError:
+	cust = Customer("larry Torres", 0)
+```
+
+#### Handling exception hierarchies
+-  It's better to list the except blocks in the increasing order of specificity, i.e. children before parents, otherwise the child exception will be called in the parent except block.
+
+### Designing for inheritance and polymorphism
+- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 - Acknowledgement
