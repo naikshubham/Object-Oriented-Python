@@ -521,7 +521,51 @@ except BalanceError:
 -  It's better to list the except blocks in the increasing order of specificity, i.e. children before parents, otherwise the child exception will be called in the parent except block.
 
 ### Designing for inheritance and polymorphism
-- 
+
+#### Polymorphism
+- Using a unified interface to operate on objects of different classes.
+
+<img src="Polymorphism/accounts.JPG">
+
+- The BankAccount, SavingsAccount and CheckingAccount class has a withdraw method, but the ChecingAccount method is executing different code.
+
+#### All that matters ia a interface
+- Lets say we define a function to withdraw a same amount of money from whole list of accounts at once. The function doesn't care whether the objects passed to it are CheckingAccount, SavingsAccount or a mix. All that matters is that they have a withdraw method that accepts one argument that is enough to make the function work.
+- It doesn't check which withdraw it should call the original or the modfied.When the withdraw method is actually called python will dynamically pull the correct method.
+- Modified withdraw when the CheckingAccount is being processed and the base method when SavingsAccount or normal account is called.
+
+```python
+def batch_withdraw(list_of_accounts, amount):
+	for acct in list_of_accounts:
+		acct.withdraw(amount)
+
+b, c, s = BankAccount(1000), CheckingAccount(2000), SavingsAccount(3000)
+bacth_withdraw([b,c,s]) # <-- Will use BankAccount.withdraw(),
+						# then CheckingAccount.withdraw(),
+						# then SavingsAccount.withdraw()
+```
+
+- `batch_withdraw()` doesn't need to check the object to know which `withdraw()` to call
+
+#### Liskov substitution principle
+- There is a fundamental object oriented design principle of when and how to use inheritance properly called Liskov substitution principle : `Base class should be interchangeable with any of its subclasses without altering any properties of the program.
+- That means wherever `BankAccount` works, `CheckingAccount` should work as well. For e.g `batch_withdraw` function worked regardless of what kind of account was used.
+
+#### Violating LSP
+- Syntactic incompatibility : `BankAccount.withdraw()` requires 1 parameter, but `CheckingAccount.withdraw()` requires 2
+- Subclass strengthening input conditions : `BankAccount.withdraw()` accepts any amount, but `CheckingAccount.withdraw()` assumes that the amount is limited.
+- Subclass weakening output conditions : `BankAccount.withdraw()` can only leave a positive balance or cause an error, `CheckingAccount.withdraw()` can leave balance negative.
+- Changing addtional attributes in the subclass's method that were'nt changed in the base class.
+- Throwing additional exceptions in subclass's method that base class did'nt throw.
+
+#### No LSP - No Inheritance
+- If the class hierarchy voilates the LSP, then we should not use inheritance bcz its likely to behave the code in unpredictable ways.
+
+
+
+
+
+
 
 
 
